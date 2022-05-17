@@ -5,5 +5,6 @@ create or replace NONEDITIONABLE PACKAGE ADMIN AS
  procedure p_uzmirazmatranje(in_json in JSON_OBJECT_T, out_json out JSON_OBJECT_T);
  procedure p_zatvoriprijavu(in_json in JSON_OBJECT_T, out_json out JSON_OBJECT_T);
  procedure p_zatvoridokument(in_json in JSON_OBJECT_T, out_json out JSON_OBJECT_T);
+ function f_checkpovjerenik(korid in NUMBER, out_json out JSON_OBJECT_T) return boolean;
  
 END ADMIN;

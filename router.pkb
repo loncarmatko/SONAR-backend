@@ -102,6 +102,8 @@ create or replace NONEDITIONABLE PACKAGE BODY router AS
         korisnik.p_showdokumenti(JSON_OBJECT_T(p_in), l_obj);
     WHEN 'p_obrisiprijavu' THEN
         korisnik.p_obrisiprijavu(JSON_OBJECT_T(p_in), l_obj);
+    WHEN 'p_getinfo' THEN
+        korisnik.p_getinfo(JSON_OBJECT_T(p_in), l_obj);
     WHEN 'p_arhivirajprijavu' THEN
         prijavearhiva.p_arhivirajprijavu(JSON_OBJECT_T(p_in), l_obj);  
     WHEN 'p_procitajarhivu' THEN

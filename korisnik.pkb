@@ -46,7 +46,7 @@ procedure p_otvoriprijavu(in_json in JSON_OBJECT_T, out_json out JSON_OBJECT_T) 
     l_string := in_json.TO_STRING;
 
     SELECT
-        JSON_VALUE(l_string, '$.IDKORISNIKA'),
+        JSON_VALUE(l_string, '$.UserID'),
         JSON_VALUE(l_string, '$.IDZVANJE')
     INTO
         l_prijave.IDKORISNIKA,
@@ -142,6 +142,15 @@ procedure p_widgetkorisnik(in_json in JSON_OBJECT_T, out_json out JSON_OBJECT_T)
         l_id
     FROM 
        dual;     
+       
+    if (l_id is null) then
+        SELECT
+            JSON_VALUE(l_string, '$.UserID')
+        INTO
+            l_id
+        FROM 
+            dual;     
+    END IF;
 
 
   OPEN c_show;
@@ -210,7 +219,7 @@ procedure p_checkotvoreno(in_json in JSON_OBJECT_T, out_json out JSON_OBJECT_T) 
     l_string := in_json.TO_STRING;
 
     SELECT
-        JSON_VALUE(l_string, '$.IDKORISNIKA'),
+        JSON_VALUE(l_string, '$.UserID'),
         JSON_VALUE(l_string, '$.IDZVANJE')
     INTO
         l_prijave.IDKORISNIKA,
@@ -284,7 +293,7 @@ procedure p_podnesiprijavu(in_json in JSON_OBJECT_T, out_json out JSON_OBJECT_T)
     l_string := in_json.TO_STRING;
 
     SELECT
-        JSON_VALUE(l_string, '$.ID'),
+        JSON_VALUE(l_string, '$.IDPRIJAVE'),
         JSON_VALUE(l_string, '$.UserID')
     INTO
         l_prijave.ID,
@@ -422,7 +431,7 @@ procedure p_getkorisnik(in_json in JSON_OBJECT_T, out_json out JSON_OBJECT_T) AS
       l_string := in_json.TO_STRING; 
 
     SELECT
-        JSON_VALUE(l_string, '$.IDKORISNIKA')
+        JSON_VALUE(l_string, '$.UserID')
     INTO
         l_id
     FROM 
@@ -465,7 +474,7 @@ procedure p_promjenipassword(in_json in JSON_OBJECT_T, out_json out JSON_OBJECT_
       l_string := in_json.TO_STRING; 
 
     SELECT
-        JSON_VALUE(l_string, '$.IDKORISNIKA'),
+        JSON_VALUE(l_string, '$.UserID'),
         JSON_VALUE(l_string, '$.PASSWORD')
     INTO
         l_korisnici.ID,
@@ -637,7 +646,7 @@ procedure p_obrisiprijavu(in_json in JSON_OBJECT_T, out_json out JSON_OBJECT_T) 
     l_string := in_json.TO_STRING;
 
     SELECT
-        JSON_VALUE(l_string, '$.IDKORISNIKA')
+        JSON_VALUE(l_string, '$.UserID')
     INTO
         l_prijave.IDKORISNIKA
     FROM 
@@ -665,6 +674,113 @@ exception
 
 END p_obrisiprijavu;
 
+
+-----------------------------------------------------------------------------------------
+--p_getinfo
+procedure p_getinfo(in_json in JSON_OBJECT_T, out_json out JSON_OBJECT_T) AS
+      l_obj JSON_OBJECT_T;
+      l_korisnik korisnici%rowtype;
+      l_show varchar2(8000);
+      l_shows json_array_t :=JSON_ARRAY_T('[]');
+      l_count number;
+      l_id number;
+      l_string varchar2(1000);
+      l_search varchar2(100);
+      l_page number; 
+      l_perpage number;
+      l_action varchar2(10);
+      
+    CURSOR c_show IS
+        SELECT 
+            json_object('IDKORISNIKA' VALUE ID,
+                        'IDKNJIZNICE' VALUE IDKNJIZNICA) as izlaz
+                        --'NEXTID' VALUE KORISNICI_ID_SEQ.nextval
+        FROM
+            korisnici
+        WHERE
+            ID = l_korisnik.ID;
+      
+
+    BEGIN  
+    l_obj := JSON_OBJECT_T(in_json);  
+    l_string := in_json.TO_STRING;
+
+    SELECT
+        JSON_VALUE(l_string, '$.UserID')
+    INTO
+        l_korisnik.ID
+    FROM 
+       dual;     
+
+    OPEN c_show;
+        FETCH c_show into l_show;
+        l_shows.append(JSON_OBJECT_T(l_show));
+    CLOSE c_show;
+
+    l_obj.put('povjerenik', admin.f_checkpovjerenik(l_korisnik.ID, out_json));
+    l_obj.put('data', l_shows);
+    out_json := l_obj;
+
+exception
+      when e_iznimka then
+      out_json := l_obj; 
+  when others then
+      --COMMON.p_errlog('p_otvoriprijavu',dbms_utility.format_error_backtrace,SQLCODE,SQLERRM, l_string);
+      l_obj.put('h_message', 'Dogodila se greška u obradi podataka!' || dbms_utility.format_error_backtrace || SQLERRM); 
+      l_obj.put('h_errcode', 310);
+      out_json := l_obj;
+
+END p_getinfo;
+
+
+
+-----------------------------------------------------------------------------------------
+--p_updateslika
+procedure p_updateslika(in_json in JSON_OBJECT_T, out_json out JSON_OBJECT_T) AS
+      l_obj JSON_OBJECT_T;
+      l_korisnik korisnici%rowtype;
+      l_show varchar2(8000);
+      l_shows json_array_t :=JSON_ARRAY_T('[]');
+      l_count number;
+      l_id number;
+      l_string varchar2(1000);
+      l_search varchar2(100);
+      l_page number; 
+      l_perpage number;
+      l_action varchar2(10);
+
+    BEGIN  
+    l_obj := JSON_OBJECT_T(in_json);  
+    l_string := in_json.TO_STRING;
+
+    SELECT
+        JSON_VALUE(l_string, '$.IDKORISNIKA'),
+        JSON_VALUE(l_string, '$.SLIKA')
+    INTO
+        l_korisnik.ID,
+        l_korisnik.SLIKA
+    FROM 
+       dual;     
+
+    UPDATE korisnici SET
+        SLIKA = l_korisnik.SLIKA;
+        commit;
+        l_obj.put('h_message', 'Uspješno ste promjenili korisnika');
+        l_obj.put('h_errcode', 0);
+        
+        
+    out_json := l_obj;
+
+exception
+      when e_iznimka then
+      out_json := l_obj; 
+  when others then
+      --COMMON.p_errlog('p_otvoriprijavu',dbms_utility.format_error_backtrace,SQLCODE,SQLERRM, l_string);
+      l_obj.put('h_message', 'Dogodila se greška u obradi podataka!' || dbms_utility.format_error_backtrace || SQLERRM); 
+      l_obj.put('h_errcode', 311);
+      out_json := l_obj;
+
+END p_updateslika;
 
 
 

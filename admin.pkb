@@ -241,7 +241,9 @@ procedure p_zatvoriprijavu(in_json in JSON_OBJECT_T, out_json out JSON_OBJECT_T)
                     'PODNESENO' VALUE PODNESENO,
                     'IDZVANJE' VALUE IDZVANJE,
                     'IDSTATUSPRIJAVE' VALUE IDSTATUSPRIJAVE,
-                    'IDPOVJERENIK' VALUE IDPOVJERENIK)
+                    'IDPOVJERENIK' VALUE IDPOVJERENIK,
+                    'PRIHVACENO' VALUE PRIHVACENO,
+                    'KOMENTAR' VALUE KOMENTAR)
     FROM
         prijave
     WHERE 
@@ -402,6 +404,46 @@ procedure p_zatvoridokument(in_json in JSON_OBJECT_T, out_json out JSON_OBJECT_T
 
 END p_zatvoridokument;
 
+------------------------------------------------------------------------------------
+--f_checkpovjerenik
+  function f_checkpovjerenik(korid in NUMBER, out_json out JSON_OBJECT_T) return boolean AS
+      l_obj JSON_OBJECT_T;
+      l_korisnici korisnici%rowtype;
+      l_id number;
+      l_string varchar2(1000);
+      l_search varchar2(100);
+      l_pov number;
+  BEGIN
+
+    SELECT
+        IDPOVJERENIK
+    INTO
+        l_pov
+    FROM   
+        korisnici
+    WHERE
+        ID = korid;
+        
+    if(l_pov = 1) then
+        return false;
+    else
+        return true;
+    end if;    
+    
+    out_json := l_obj;
+
+    
+    
+  EXCEPTION
+    WHEN E_IZNIMKA THEN
+        out_json := l_obj;
+    WHEN OTHERS THEN
+        --COMMON.p_errlog('p_check_korisnici',dbms_utility.format_error_backtrace,SQLCODE,SQLERRM, l_string);
+        l_obj.put('h_message', 205); 
+        l_obj.put('h_errcode', 'Dogodila se greska u obradi podataka!' || SQLERRM);
+        out_json := l_obj;
+        return true;
+  END f_checkpovjerenik;
 
 
 

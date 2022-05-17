@@ -16,6 +16,8 @@ e_iznimka exception;
 
      l_obj := JSON_OBJECT_T(in_json);  
      l_string := in_json.TO_STRING;
+     
+     
 
      SELECT
         JSON_VALUE(l_string, '$.ID'),
@@ -27,7 +29,6 @@ e_iznimka exception;
         JSON_VALUE(l_string, '$.SPOL'),
         JSON_VALUE(l_string, '$.OIB'),
         JSON_VALUE(l_string, '$.DATROD' ),
-        JSON_VALUE(l_string, '$.SLIKA'),
         JSON_VALUE(l_string, '$.IDZVANJE'),
         JSON_VALUE(l_string, '$.RADNOMJ'),
         JSON_VALUE(l_string, '$.IDPOVJERENIK'),
@@ -43,7 +44,6 @@ e_iznimka exception;
         l_korisnici.SPOL,
         l_korisnici.OIB,
         l_korisnici.DATROD,
-        l_korisnici.SLIKA,
         l_korisnici.IDZVANJE,
         l_korisnici.RADNOMJ,
         l_korisnici.IDPOVJERENIK,
@@ -51,7 +51,16 @@ e_iznimka exception;
         l_action
     FROM 
        dual; 
- 
+       
+    if(l_korisnici.id is null) then
+        select 
+            JSON_VALUE(l_string, '$.UserID')
+        into
+            l_korisnici.id
+        from 
+            dual;
+    end if;
+    
     --FE kontrole
    if trunc(l_action) is null then
        if (filter.f_check_korisnici(l_obj, out_json)) then
@@ -59,7 +68,6 @@ e_iznimka exception;
         end if;  
     end if;
     
-    l_obj.put('datum test', l_korisnici.DATROD);
 
     if (l_korisnici.id is null) then
         begin
@@ -67,11 +75,14 @@ e_iznimka exception;
              (l_korisnici.IDKNJIZNICA, l_korisnici.IME, l_korisnici.PREZIME,
               l_korisnici.EMAIL, hash.f_hash_pw(l_korisnici.EMAIL, l_korisnici.PASSWORD), TO_NUMBER(l_korisnici.SPOL), TO_NUMBER(l_korisnici.OIB),
               l_korisnici.DATROD, l_korisnici.SLIKA, l_korisnici.IDZVANJE, l_korisnici.RADNOMJ,
-              l_korisnici.IDPOVJERENIK, l_korisnici.TITULA);
+              l_korisnici.IDPOVJERENIK, l_korisnici.TITULA)
+              returning id into l_korisnici.ID;
            commit;
 
            l_obj.put('h_message', 'Uspješno ste unijeli korisnika');
            l_obj.put('h_errcode', 0);
+           l_obj.put('IDKORISNIKA', l_korisnici.ID);
+           l_obj.put('IDKNJIZNICE', l_korisnici.IDKNJIZNICA);
            out_json := l_obj;
 
         exception
@@ -109,8 +120,7 @@ e_iznimka exception;
                       EMAIL = l_korisnici.EMAIL,
                       SPOL = l_korisnici.SPOL,
                       OIB = l_korisnici.OIB,
-                      DATROD = l_korisnici.DATROD,
-                      SLIKA = l_korisnici.SLIKA,
+                      DATROD = l_korisnici.DATROD, 
                       IDZVANJE = l_korisnici.IDZVANJE,
                       RADNOMJ = l_korisnici.RADNOMJ,
                       IDPOVJERENIK = l_korisnici.IDPOVJERENIK,
@@ -119,7 +129,7 @@ e_iznimka exception;
                   id = l_korisnici.id;
                commit;    
 
-               l_obj.put('h_message', 'Uspješno ste promijenili korsnika'); 
+               l_obj.put('h_message', 'Uspješno ste promijenili korisnika'); 
                l_obj.put('h_errcode', 0);
                out_json := l_obj;
             exception
@@ -803,7 +813,7 @@ procedure p_save_dokumenti(in_json in JSON_OBJECT_T, out_json out JSON_OBJECT_T)
 
      SELECT
         JSON_VALUE(l_string, '$.ID' ),
-        JSON_VALUE(l_string, '$.IDKORISNIKA'),
+        JSON_VALUE(l_string, '$.UserID'),
         JSON_VALUE(l_string, '$.IDPRAVILNIK'),
         JSON_VALUE(l_string, '$.IDPRIJAVE' ),
         JSON_VALUE(l_string, '$.LINK' ),

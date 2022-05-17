@@ -86,13 +86,6 @@ END p_arhivirajprijavu;
 procedure p_procitajstavku(in_json in JSON_OBJECT_T, out_json out JSON_OBJECT_T) AS
   l_obj JSON_OBJECT_T;
   l_arhiva arhiva%rowtype;
-  l_prijava prijave%rowtype;
-  l_prihvaceno varchar2(8000);
-  l_prihvaceni json_array_t :=JSON_ARRAY_T('[]');
-  l_odbijeno varchar2(8000);
-  l_odbijeni json_array_t :=JSON_ARRAY_T('[]');
-  l_test varchar2(8000);
-  l_testing json_array_t :=JSON_ARRAY_T('[]');
   l_read CLOB;
   l_readjson JSON_ARRAY_T;
   l_id number;
@@ -104,7 +97,7 @@ procedure p_procitajstavku(in_json in JSON_OBJECT_T, out_json out JSON_OBJECT_T)
 
     BEGIN
       l_obj := new JSON_OBJECT_T();
-      l_string := l_obj.TO_STRING();      
+      l_string := in_json.TO_STRING();      
     
     SELECT
         JSON_VALUE(l_string, '$.IDARHIVE')
@@ -113,6 +106,8 @@ procedure p_procitajstavku(in_json in JSON_OBJECT_T, out_json out JSON_OBJECT_T)
     FROM 
         dual;
         
+        
+
     SELECT
         HISTORYDOKUMENTI
     INTO
@@ -120,7 +115,7 @@ procedure p_procitajstavku(in_json in JSON_OBJECT_T, out_json out JSON_OBJECT_T)
     FROM
         arhiva
     WHERE   
-        ID = 105;
+        ID = l_arhiva.ID;
 
     l_readjson := JSON_ARRAY_T(l_read);
         

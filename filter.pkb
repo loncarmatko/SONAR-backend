@@ -92,12 +92,12 @@ e_iznimka exception;
        raise e_iznimka;
     end if;
 
-    if (nvl(l_korisnici.SLIKA, ' ') = ' ') then   
+/*    if (nvl(l_korisnici.SLIKA, ' ') = ' ') then   
        l_obj.put('h_message', 'Molimo odaberite sliku'); 
        l_obj.put('h_errcode', 109);
        raise e_iznimka;
     end if;
-
+*/
     if (nvl(l_korisnici.IDZVANJE, 0) = 0) then   
        l_obj.put('h_message', 'Molimo odaberite zvanje'); 
        l_obj.put('h_errcode', 110);
@@ -525,7 +525,7 @@ function f_check_dokumenti(in_json in JSON_OBJECT_T, out_json out JSON_OBJECT_T)
 
      SELECT
         JSON_VALUE(l_string, '$.ID' ),
-        JSON_VALUE(l_string, '$.IDKORISNIKA'),
+        JSON_VALUE(l_string, '$.UserID'),
         JSON_VALUE(l_string, '$.IDPRAVILNIK'),
         JSON_VALUE(l_string, '$.IDPRIJAVE' ),
         JSON_VALUE(l_string, '$.LINK' ),
