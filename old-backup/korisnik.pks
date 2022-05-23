@@ -10,5 +10,7 @@ create or replace NONEDITIONABLE PACKAGE KORISNIK AS
  procedure p_showopci(in_json in JSON_OBJECT_T, out_json out JSON_OBJECT_T);
  procedure p_showdokumenti(in_json in JSON_OBJECT_T, out_json out JSON_OBJECT_T);
  procedure p_obrisiprijavu(in_json in JSON_OBJECT_T, out_json out JSON_OBJECT_T);
-
+ procedure p_getinfo(in_json in JSON_OBJECT_T, out_json out JSON_OBJECT_T);
+ procedure p_updateslika(in_json in JSON_OBJECT_T, out_json out JSON_OBJECT_T);
+ 
 END KORISNIK;
