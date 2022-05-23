@@ -99,7 +99,7 @@ procedure p_procitajarhivu(in_json in JSON_OBJECT_T, out_json out JSON_OBJECT_T)
       l_string := in_json.TO_STRING; 
 
     SELECT
-        JSON_VALUE(l_string, '$.IDKORISNIKA')
+        JSON_VALUE(l_string, '$.UserID')
     INTO
         l_arhiva.IDKORISNIKA
     FROM
